@@ -3,12 +3,12 @@ import * as path from 'path'
 import delay from 'delay'
 import {promises as fsPromises} from 'fs'
 
-describe('fileSystemCache', () => {
+describe('FileSystemCache', () => {
   const directory = path.resolve(__dirname, '../cache')
   const cacheKey = 'some.cache.key'
   const cacheValue = 'some value'
 
-  afterAll(() => {
+  afterEach(() => {
     return fsPromises.rmdir(directory, {recursive: true})
   })
 
@@ -43,6 +43,47 @@ describe('fileSystemCache', () => {
       await delay(1001)
 
       expect(await fileSystemCache.get(cacheKey)).toBeNull()
+    })
+
+    it('should return null if the cache file does not exist', async () => {
+      expect.assertions(1)
+
+      const cacheKey = 'some.cache.key.which.does.not.exist'
+
+      expect(await fileSystemCache.get(cacheKey)).toBeNull()
+    })
+
+    it('should throw an error if the expiry timestamp is invalid', async () => {
+      expect.assertions(1)
+
+      const contents = `30394"some content"`
+      const cacheKey = 'key'
+      await fsPromises.mkdir(directory)
+      await fsPromises.writeFile(`${directory}/${cacheKey}`, contents)
+
+      try {
+        await fileSystemCache.get(cacheKey)
+      } catch (e) {
+        expect(e.message).toEqual('Invalid expiry timestamp in "/key". File has been removed.')
+      }
+    })
+
+    it('should throw an error if the cache value is invalid', async () => {
+      expect.assertions(1)
+
+      const now = new Date()
+      now.setMilliseconds(now.getMilliseconds() + 60000)
+
+      const contents = `${now.getTime()}{[ldldflfd/:ffkfkf`
+      const cacheKey = 'key'
+      await fsPromises.mkdir(directory)
+      await fsPromises.writeFile(`${directory}/${cacheKey}`, contents)
+
+      try {
+        await fileSystemCache.get(cacheKey)
+      } catch (e) {
+        expect(e.message).toEqual('Unable to parse cache contents in "/key". File has been removed. Unexpected token [ in JSON at position 1')
+      }
     })
   })
 })

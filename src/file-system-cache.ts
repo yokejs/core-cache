@@ -13,20 +13,28 @@ const createDirectoryIfNotExists = async (directory: string) => {
   }
 }
 
+const resolveCacheKey = (key: string): string[] => {
+  return key.split('.').join(path.sep).split(path.sep)
+}
+
 const resolveCacheDirectory = (key: string): string => {
-  // TODO: De-dupe
-  const keyDirectory = key.split('.').join(path.sep).split(path.sep)
+  const cacheKey = resolveCacheKey(key)
 
-  keyDirectory.pop()
+  cacheKey.pop()
 
-  return keyDirectory.join(path.sep)
+  return cacheKey.join(path.sep)
 }
 
 const resolveCacheFile = (key: string): string => {
-  // TODO: De-dupe
-  const keyDirectory = key.split('.').join(path.sep).split(path.sep)
+  const cacheKey = resolveCacheKey(key)
 
-  return keyDirectory[keyDirectory.length - 1]
+  return cacheKey[cacheKey.length - 1]
+}
+
+const isValidExpiry = (timestamp: string): boolean => {
+  const isValidTimestamp = /^\d+$/.test(timestamp)
+
+  return isValidTimestamp && !!new Date(parseInt(timestamp)).getTime()
 }
 
 const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
@@ -40,18 +48,15 @@ const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
       }
 
       const contents = await fsPromises.readFile(`${cacheDir}/${cacheFile}`)
+      const timestamp = contents.toString().substr(0, 13)
 
-      // TODO: Check valid timestamp
-      const timestamp = parseInt(contents.toString().substr(0, 13))
-
-      if (isNaN(timestamp)) {
+      if (!isValidExpiry(timestamp)) {
         await fsPromises.unlink(`${cacheDir}/${cacheFile}`)
 
-        // TODO: Should I just return null?
-        throw new Error(`Invalid expiry timestamp in "${cacheDir}/${cacheFile}". File has been removed.`)
+        throw new Error(`Invalid expiry timestamp in "${resolveCacheDirectory(key)}/${cacheFile}". File has been removed.`)
       }
 
-      if (timestamp < new Date().getTime()) {
+      if (parseInt(timestamp) < new Date().getTime()) {
         await fsPromises.unlink(`${cacheDir}/${cacheFile}`)
 
         return null
@@ -60,12 +65,14 @@ const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
       const value = contents.toString().substr(13)
 
       try {
-        return JSON.parse(value)
+        const unserialized = JSON.parse(value)
+
+        return unserialized
       } catch (e) {
         await fsPromises.unlink(`${cacheDir}/${cacheFile}`)
 
-        // TODO: Should I just return null?
-        throw new Error(`Unable to parse cache contents in "${cacheDir}/${cacheFile}". File has been removed. ${e.message}`)
+        // TODO: Write test
+        throw new Error(`Unable to parse cache contents in "${resolveCacheDirectory(key)}/${cacheFile}". File has been removed. ${e.message}`)
       }
     },
 
