@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "lib": ["ES2019"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "target": "ES2019",
+    "types": [
+      "node",
+      "jest"
+    ]
+  },
+  "include": ["src/**/*", "__tests__/**/*"],
+  "exclude": ["node_modules"]
+
+}

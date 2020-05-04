@@ -1,0 +1,27 @@
+{
+  "name": "@yokejs/core-cache",
+  "version": "0.0.1",
+  "license": "MIT",
+  "private": false,
+  "authors": [
+    {
+      "name": "Craig Cartmell"
+    }
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "engines": {
+    "node": "12"
+  },
+  "engineStrict": false,
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "delay": "^4.3.0",
+    "jest": "^25.5.4",
+    "ts-jest": "^25.4.0",
+    "typescript": "^3.8.3"
+  }
+}

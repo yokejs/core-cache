@@ -1,1 +1,1 @@
-# core-cache
+# core-config
