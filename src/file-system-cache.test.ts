@@ -2,6 +2,7 @@ import FileSystemCache from './file-system-cache'
 import * as path from 'path'
 import delay from 'delay'
 import {promises as fsPromises} from 'fs'
+import * as fs from 'fs'
 
 describe('FileSystemCache', () => {
   const directory = path.resolve(__dirname, '../cache')
@@ -19,6 +20,16 @@ describe('FileSystemCache', () => {
       expect.assertions(1)
 
       await fileSystemCache.set(cacheKey, cacheValue, 2000)
+      expect(await fileSystemCache.get(cacheKey)).toEqual(cacheValue)
+    })
+
+    it('should store the given value in a flat file indefinitely if no expiry is given', async () => {
+      expect.assertions(1)
+
+      await fileSystemCache.set(cacheKey, cacheValue)
+
+      // TODO: Override system time here
+
       expect(await fileSystemCache.get(cacheKey)).toEqual(cacheValue)
     })
   })
@@ -98,6 +109,18 @@ describe('FileSystemCache', () => {
       await fileSystemCache.delete(cacheKey)
 
       expect(await fileSystemCache.get(cacheKey)).toBeNull()
+    })
+  })
+
+  describe('flush', () => {
+    it('removes the base cache directory', async () => {
+      await fileSystemCache.set('key.one', cacheValue, 600000)
+      await fileSystemCache.set('key.two', cacheValue, 600000)
+      await fileSystemCache.set('key.three', cacheValue, 600000)
+
+      await fileSystemCache.flush()
+
+      expect(fs.existsSync(directory)).toBeFalsy()
     })
   })
 })

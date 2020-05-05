@@ -32,9 +32,21 @@ const resolveCacheFile = (key: string): string => {
 }
 
 const isValidExpiry = (timestamp: string): boolean => {
+  if (isIndefiniteExpiryTimestamp(timestamp)) {
+    return true
+  }
+
   const isValidTimestamp = /^\d+$/.test(timestamp)
 
   return isValidTimestamp && !!new Date(parseInt(timestamp)).getTime()
+}
+
+const indefiniteExpiryTimestamp = (): string => {
+  return "".padStart(13, "0")
+}
+
+const isIndefiniteExpiryTimestamp = (timestamp: string): boolean => {
+  return timestamp === indefiniteExpiryTimestamp()
 }
 
 const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
@@ -56,7 +68,7 @@ const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
         throw new Error(`Invalid expiry timestamp in "${resolveCacheDirectory(key)}/${cacheFile}". File has been removed.`)
       }
 
-      if (parseInt(timestamp) < new Date().getTime()) {
+      if (!isIndefiniteExpiryTimestamp(timestamp) && parseInt(timestamp) < new Date().getTime()) {
         await fsPromises.unlink(`${cacheDir}/${cacheFile}`)
 
         return null
@@ -76,15 +88,18 @@ const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
       }
     },
 
-    set: async (key: string, value: any, milliseconds: number): Promise<void> => {
+    set: async (key: string, value: any, milliseconds?: number): Promise<void> => {
       const cacheDir = `${directory}/${resolveCacheDirectory(key)}`
       const now = new Date()
 
-      now.setMilliseconds(now.getMilliseconds() + milliseconds)
+      if (milliseconds) {
+        now.setMilliseconds(now.getMilliseconds() + milliseconds)
+      }
 
+      const expiryTimestamp = milliseconds ? now.getTime() : indefiniteExpiryTimestamp()
       await createDirectoryIfNotExists(cacheDir)
 
-      const contents = `${now.getTime()}${JSON.stringify(value)}`
+      const contents = `${expiryTimestamp}${JSON.stringify(value)}`
 
       await fsPromises.writeFile(`${cacheDir}/${resolveCacheFile(key)}`, contents)
     },
@@ -93,20 +108,20 @@ const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
       const cacheDir = `${directory}/${resolveCacheDirectory(key)}`
       const cacheFile = resolveCacheFile(key)
 
-      if(!fs.existsSync(`${cacheDir}/${cacheFile}`)) {
+      if (!fs.existsSync(`${cacheDir}/${cacheFile}`)) {
         return
       }
 
-     try {
-       await fsPromises.unlink(`${cacheDir}/${cacheFile}`)
-     } catch (e) {
+      try {
+        await fsPromises.unlink(`${cacheDir}/${cacheFile}`)
+      } catch (e) {
         // TODO: Write test
-       throw new Error(`Unable to remove file "${resolveCacheDirectory(key)}/${cacheFile}". ${e.message}`)
-     }
+        throw new Error(`Unable to remove file "${resolveCacheDirectory(key)}/${cacheFile}". ${e.message}`)
+      }
     },
 
     flush: async (): Promise<void> => {
-
+      await fsPromises.rmdir(directory, {recursive: true})
     }
   }
 }

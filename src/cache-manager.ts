@@ -3,7 +3,7 @@ import FileSystemCache, {IFileSystemCacheOptions} from './file-system-cache'
 export interface IYokeCache {
   get: (key: string) => Promise<any>,
 
-  set: (key: string, value: any, milliseconds: number) => Promise<void>
+  set: (key: string, value: any, milliseconds?: number) => Promise<void>
 
   delete: (key: string) => Promise<void>
 
