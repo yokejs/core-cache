@@ -14,11 +14,11 @@ describe('FileSystemCache', () => {
 
   const fileSystemCache = FileSystemCache({directory})
 
-  describe('store', () => {
+  describe('set', () => {
     it('should store the given value in a flat file with the correct expiry timestamp', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.store(cacheKey, cacheValue, 2000)
+      await fileSystemCache.set(cacheKey, cacheValue, 2000)
       expect(await fileSystemCache.get(cacheKey)).toEqual(cacheValue)
     })
   })
@@ -27,7 +27,7 @@ describe('FileSystemCache', () => {
     it('should return an unserialized value if still valid', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.store(cacheKey, cacheValue, 6000)
+      await fileSystemCache.set(cacheKey, cacheValue, 6000)
 
       expect(await fileSystemCache.get(cacheKey)).toEqual(cacheValue)
     })
@@ -38,7 +38,7 @@ describe('FileSystemCache', () => {
       const cacheKey = 'some.cache.key'
       const cacheValue = 'some value'
 
-      await fileSystemCache.store(cacheKey, cacheValue, 1000)
+      await fileSystemCache.set(cacheKey, cacheValue, 1000)
 
       await delay(1001)
 
@@ -53,7 +53,7 @@ describe('FileSystemCache', () => {
       expect(await fileSystemCache.get(cacheKey)).toBeNull()
     })
 
-    it('should throw an error if the expiry timestamp is invalid', async () => {
+    it('throws an error if the expiry timestamp is invalid', async () => {
       expect.assertions(1)
 
       const contents = `30394"some content"`
@@ -68,7 +68,7 @@ describe('FileSystemCache', () => {
       }
     })
 
-    it('should throw an error if the cache value is invalid', async () => {
+    it('throws an error if the cache value is invalid', async () => {
       expect.assertions(1)
 
       const now = new Date()
@@ -84,6 +84,20 @@ describe('FileSystemCache', () => {
       } catch (e) {
         expect(e.message).toEqual('Unable to parse cache contents in "/key". File has been removed. Unexpected token [ in JSON at position 1')
       }
+    })
+  })
+
+  describe('delete', () => {
+    it('removes the given cache file', async () => {
+      expect.assertions(2)
+
+      await fileSystemCache.set(cacheKey, cacheValue, 60000)
+
+      expect(await fileSystemCache.get(cacheKey)).toEqual(cacheValue)
+
+      await fileSystemCache.delete(cacheKey)
+
+      expect(await fileSystemCache.get(cacheKey)).toBeNull()
     })
   })
 })
