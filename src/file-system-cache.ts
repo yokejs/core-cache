@@ -7,30 +7,45 @@ export interface IFileSystemCacheOptions {
   directory: string
 }
 
+/**
+ * Recursively create the cache directory if it does not exist.
+ */
 const createDirectoryIfNotExists = async (directory: string) => {
   if (!fs.existsSync(directory)) {
     await fsPromises.mkdir(directory, {recursive: true})
   }
 }
 
-const resolveCacheKey = (key: string): string[] => {
+/**
+ * Convert the given key to an array of paths using the OS separator. Supports dot notation.
+ */
+const resolveCachePaths = (key: string): string[] => {
   return key.split('.').join(path.sep).split(path.sep)
 }
 
+/**
+ * Resolve the cache directory based on the given key. Supports dot notation.
+ */
 const resolveCacheDirectory = (key: string): string => {
-  const cacheKey = resolveCacheKey(key)
+  const cacheKey = resolveCachePaths(key)
 
   cacheKey.pop()
 
   return cacheKey.join(path.sep)
 }
 
+/**
+ * Resolve the cache file based on the given key. Supports dot notation.
+ */
 const resolveCacheFile = (key: string): string => {
-  const cacheKey = resolveCacheKey(key)
+  const cacheKey = resolveCachePaths(key)
 
   return cacheKey[cacheKey.length - 1]
 }
 
+/**
+ * Determine whether the given expiry timestamp is valid.
+ */
 const isValidExpiry = (timestamp: string): boolean => {
   if (isIndefiniteExpiryTimestamp(timestamp)) {
     return true
@@ -41,16 +56,25 @@ const isValidExpiry = (timestamp: string): boolean => {
   return isValidTimestamp && !!new Date(parseInt(timestamp)).getTime()
 }
 
+/**
+ * A placeholder timestamp to flag a cache as indefinite. "0000000000000".
+ */
 const indefiniteExpiryTimestamp = (): string => {
   return "".padStart(13, "0")
 }
 
+/**
+ * Determine whether the given timestamp is indefinite.
+ */
 const isIndefiniteExpiryTimestamp = (timestamp: string): boolean => {
   return timestamp === indefiniteExpiryTimestamp()
 }
 
 const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
   return {
+    /**
+     * Get a value from the cache.
+     */
     get: async (key: string): Promise<any> => {
       const cacheDir = `${directory}/${resolveCacheDirectory(key)}`
       const cacheFile = resolveCacheFile(key)
@@ -85,6 +109,9 @@ const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
       }
     },
 
+    /**
+     * Set a value in the cache.
+     */
     set: async (key: string, value: any, milliseconds?: number): Promise<void> => {
       const cacheDir = `${directory}/${resolveCacheDirectory(key)}`
       const now = new Date()
@@ -101,6 +128,34 @@ const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
       await fsPromises.writeFile(`${cacheDir}/${resolveCacheFile(key)}`, contents)
     },
 
+    /**
+     * Increase and return a value in the cache by the given number, defaulting to 1.
+     *
+     * If the key does not exist, sets to zero before performing the operation.
+     */
+    increment: async (key: string, by: number = 1): Promise<number> => {
+      const value = await FileSystemCache({directory}).get(key) || 0
+      const parsed = parseInt(value)
+
+      if (isNaN(parsed)) {
+        throw new Error("Unable to increment a none integer value")
+      }
+
+      return parsed + by
+    },
+
+    /**
+     * Decrease and return a value in the cache by the given number, defaulting to 1.
+     *
+     * If the key does not exist, sets to zero before performing the operation.
+     */
+    decrement: async (key: string, by: number = 1): Promise<number> => {
+      return (await FileSystemCache({directory}).increment(key, by * -1))
+    },
+
+    /**
+     * Delete an item in the cache.
+     */
     delete: async (key: string): Promise<void> => {
       const cacheDir = `${directory}/${resolveCacheDirectory(key)}`
       const cacheFile = resolveCacheFile(key)
@@ -117,24 +172,12 @@ const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
       }
     },
 
+    /**
+     * Delete all items in the cache.
+     */
     flush: async (): Promise<void> => {
       await fsPromises.rmdir(directory, {recursive: true})
     },
-
-    increment: async (key: string, by: number = 1): Promise<number> => {
-      const value = await FileSystemCache({directory}).get(key) || 0
-      const parsed = parseInt(value)
-
-      if (isNaN(parsed)) {
-        throw new Error("Unable to increment a none integer value")
-      }
-
-      return parsed + by
-    },
-
-    decrement: async (key: string, by: number = 1): Promise<number> => {
-      return (await FileSystemCache({directory}).increment(key, by * -1))
-    }
   }
 }
 
