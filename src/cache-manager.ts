@@ -5,13 +5,13 @@ export interface IYokeCache {
 
   set: (key: string, value: any, milliseconds?: number) => Promise<void>
 
-  delete: (key: string) => Promise<void>
-
-  flush: () => Promise<void>
-
   increment: (key: string, by?: number) => Promise<number>
 
   decrement: (key: string, by?: number) => Promise<number>
+
+  delete: (key: string) => Promise<void>
+
+  flush: () => Promise<void>
 }
 
 enum YokeCacheDriver {

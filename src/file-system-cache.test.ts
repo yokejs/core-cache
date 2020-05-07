@@ -28,7 +28,7 @@ describe('FileSystemCache', () => {
 
       await fileSystemCache.set(cacheKey, cacheValue)
 
-      // TODO: Override system time here
+      await delay(1001)
 
       expect(await fileSystemCache.get(cacheKey)).toEqual(cacheValue)
     })
