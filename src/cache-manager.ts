@@ -8,6 +8,10 @@ export interface IYokeCache {
   delete: (key: string) => Promise<void>
 
   flush: () => Promise<void>
+
+  increment: (key: string, by?: number) => Promise<number>
+
+  decrement: (key: string, by?: number) => Promise<number>
 }
 
 enum YokeCacheDriver {

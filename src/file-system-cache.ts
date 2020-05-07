@@ -77,13 +77,10 @@ const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
       const value = contents.toString().substr(13)
 
       try {
-        const unserialized = JSON.parse(value)
-
-        return unserialized
+        return JSON.parse(value)
       } catch (e) {
         await fsPromises.unlink(`${cacheDir}/${cacheFile}`)
 
-        // TODO: Write test
         throw new Error(`Unable to parse cache contents in "${resolveCacheDirectory(key)}/${cacheFile}". File has been removed. ${e.message}`)
       }
     },
@@ -122,6 +119,21 @@ const FileSystemCache = ({directory}: IFileSystemCacheOptions): IYokeCache => {
 
     flush: async (): Promise<void> => {
       await fsPromises.rmdir(directory, {recursive: true})
+    },
+
+    increment: async (key: string, by: number = 1): Promise<number> => {
+      const value = await FileSystemCache({directory}).get(key) || 0
+      const parsed = parseInt(value)
+
+      if (isNaN(parsed)) {
+        throw new Error("Unable to increment a none integer value")
+      }
+
+      return parsed + by
+    },
+
+    decrement: async (key: string, by: number = 1): Promise<number> => {
+      return (await FileSystemCache({directory}).increment(key, by * -1))
     }
   }
 }

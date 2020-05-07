@@ -5,7 +5,7 @@ import {promises as fsPromises} from 'fs'
 import * as fs from 'fs'
 
 describe('FileSystemCache', () => {
-  const directory = path.resolve(__dirname, '../cache')
+  const directory = path.resolve(__dirname, '../__tests__/support/cache')
   const cacheKey = 'some.cache.key'
   const cacheValue = 'some value'
 
@@ -114,13 +114,75 @@ describe('FileSystemCache', () => {
 
   describe('flush', () => {
     it('removes the base cache directory', async () => {
-      await fileSystemCache.set('key.one', cacheValue, 600000)
-      await fileSystemCache.set('key.two', cacheValue, 600000)
-      await fileSystemCache.set('key.three', cacheValue, 600000)
+      expect.assertions(1)
 
       await fileSystemCache.flush()
 
       expect(fs.existsSync(directory)).toBeFalsy()
+    })
+  })
+
+  describe('increment', () => {
+    it('throws an error if the value of the given key is not a number', async () => {
+      expect.assertions(1)
+
+      await fileSystemCache.set(cacheKey, "none-integer-value")
+
+      try {
+        await fileSystemCache.increment(cacheKey)
+      } catch (e) {
+        expect(e.message).toEqual("Unable to increment a none integer value")
+      }
+    })
+
+    it('returns the given incremental number if the key does not exist', async () => {
+      expect.assertions(1)
+
+      const incrementedValue = await fileSystemCache.increment(cacheKey, 1234)
+
+      expect(incrementedValue).toEqual(1234)
+    })
+
+    it('increases the existing value by the provided number of increments and returns the new value', async () => {
+      expect.assertions(1)
+
+      await fileSystemCache.set(cacheKey, 3456)
+
+      const incrementedValue = await fileSystemCache.increment(cacheKey, 33)
+
+      expect(incrementedValue).toEqual(3489)
+    })
+  })
+
+  describe('decrement', () => {
+    it('throws an error if the value of the given key is not a number', async () => {
+      expect.assertions(1)
+
+      await fileSystemCache.set(cacheKey, "none-integer-value")
+
+      try {
+        await fileSystemCache.decrement(cacheKey)
+      } catch (e) {
+        expect(e.message).toEqual("Unable to increment a none integer value")
+      }
+    })
+
+    it('returns the given decremental number if the key does not exist', async () => {
+      expect.assertions(1)
+
+      const incrementedValue = await fileSystemCache.decrement(cacheKey, 109)
+
+      expect(incrementedValue).toEqual(-109)
+    })
+
+    it('decreases the existing value by the given decremental value and returns the new value', async () => {
+      expect.assertions(1)
+
+      await fileSystemCache.set(cacheKey, 3456)
+
+      const incrementedValue = await fileSystemCache.decrement(cacheKey, 2)
+
+      expect(incrementedValue).toEqual(3454)
     })
   })
 })
