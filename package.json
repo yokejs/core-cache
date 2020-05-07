@@ -1,6 +1,7 @@
 {
   "name": "@yokejs/core-cache",
   "version": "0.0.1",
+  "main": "lib/index.js",
   "license": "MIT",
   "private": false,
   "authors": [
@@ -10,7 +11,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "prepublish": "yarn build"
   },
   "engines": {
     "node": "12"
