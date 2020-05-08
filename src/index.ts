@@ -1,3 +1,7 @@
-import cacheManager from './cache-manager'
+import CoreCache from './core-cache'
 
-export default cacheManager
+export type {IYokeCache} from './core-cache'
+
+export {default as FileSystemCache} from './file-system-cache'
+
+export default CoreCache

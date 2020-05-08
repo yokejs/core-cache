@@ -4,7 +4,7 @@
     "esModuleInterop": true,
     "module": "commonjs",
     "moduleResolution": "node",
-    "outDir": "./lib",
+    "outDir": "lib",
     "strict": true,
     "target": "es6",
     "types": [
@@ -17,6 +17,7 @@
     "__tests__/**/*"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "lib"
   ]
 }

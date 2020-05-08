@@ -1,6 +1,6 @@
 import fs from 'fs'
 import {promises as fsPromises} from 'fs'
-import {IYokeCache} from './cache-manager'
+import {IYokeCache} from './core-cache'
 import * as path from 'path'
 import CoreCache from './core-cache'
 
