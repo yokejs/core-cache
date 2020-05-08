@@ -31,7 +31,8 @@
     "prepare": "yarn build",
     "prepublishOnly": "yarn test && yarn lint",
     "preversion": "yarn test && yarn lint",
-    "version": "yarn format && git add -A src"
+    "version": "yarn format && git add -A src",
+    "postversion": "git push && git push --tags"
   },
   "engines": {
     "node": "12"
