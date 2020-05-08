@@ -3,17 +3,18 @@ import * as path from 'path'
 import delay from 'delay'
 import {promises as fsPromises} from 'fs'
 import * as fs from 'fs'
+import CoreCache from './core-cache'
 
 describe('FileSystemCache', () => {
   const directory = path.resolve(__dirname, '../__tests__/support/cache')
-  const cacheKey = 'some.cache.key'
+  const cacheKey = 'some:cache:key'
   const cacheValue = 'some value'
 
   afterEach(() => {
     return fsPromises.rmdir(directory, {recursive: true})
   })
 
-  const fileSystemCache = FileSystemCache({directory})
+  const fileSystemCache = FileSystemCache({directory, core: CoreCache()})
 
   describe('set', () => {
     it('should store the given value in a flat file with the correct expiry timestamp', async () => {
@@ -59,7 +60,7 @@ describe('FileSystemCache', () => {
     it('should return null if the cache file does not exist', async () => {
       expect.assertions(1)
 
-      const cacheKey = 'some.cache.key.which.does.not.exist'
+      const cacheKey = 'some:cache:key:which:does:not:exist'
 
       expect(await fileSystemCache.get(cacheKey)).toBeNull()
     })

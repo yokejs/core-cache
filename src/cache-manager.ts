@@ -34,6 +34,11 @@ export interface IYokeCache {
    * Delete all items in the cache.
    */
   flush: () => Promise<void>
+
+  /**
+   * Return the separator used for cache keys.
+   */
+  cacheKeySeparator: () => string
 }
 
 enum YokeCacheDriver {
