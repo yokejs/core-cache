@@ -20,8 +20,8 @@ or
 ```
 import CoreCache, {FileSystemCache} from '@yokejs/core-cache'
 
-// Define a cache directory in your application to use as file storage
-const directory = './storage/cache'
+// Define a absolute path to store the cache files
+const directory = path.resolve(__dirname, './cache')
 
 const fileSystemCache = FileSystemCache({directory, core: CoreCache()})
 
