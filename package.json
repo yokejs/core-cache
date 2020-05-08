@@ -10,6 +10,9 @@
       "name": "Craig Cartmell"
     }
   ],
+  "description": "A Node.js cache manager written in TypeScript.",
+  "keywords": ["cache", "cached", "caching", "cache manager", "store", "filesystem", "object", "node", "typescript"],
+  "homepage": "https://github.com/yokejs/core-cache",
   "scripts": {
     "build": "rm -rf lib/ && tsc",
     "test": "jest",
