@@ -2,7 +2,7 @@ export interface IYokeCache {
   /**
    * Get a value from the cache.
    */
-  get: (key: string) => Promise<any>,
+  get: (key: string) => Promise<any>
 
   /**
    * Set a value in the cache.

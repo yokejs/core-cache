@@ -1,7 +1,7 @@
 import FileSystemCache from './file-system-cache'
 import * as path from 'path'
 import delay from 'delay'
-import {promises as fsPromises} from 'fs'
+import { promises as fsPromises } from 'fs'
 import * as fs from 'fs'
 import CoreCache from './core-cache'
 
@@ -11,10 +11,10 @@ describe('FileSystemCache', () => {
   const cacheValue = 'some value'
 
   afterEach(() => {
-    return fsPromises.rmdir(directory, {recursive: true})
+    return fsPromises.rmdir(directory, { recursive: true })
   })
 
-  const fileSystemCache = FileSystemCache({directory, core: CoreCache()})
+  const fileSystemCache = FileSystemCache({ directory, core: CoreCache() })
 
   describe('set', () => {
     it('should store the given value in a flat file with the correct expiry timestamp', async () => {
@@ -77,7 +77,7 @@ describe('FileSystemCache', () => {
         await fileSystemCache.get(cacheKey)
       } catch (e) {
         // TODO: Check error code in the future
-        expect(e.message.startsWith("Invalid expiry timestamp")).toBeTruthy()
+        expect(e.message.startsWith('Invalid expiry timestamp')).toBeTruthy()
       }
     })
 
@@ -96,7 +96,9 @@ describe('FileSystemCache', () => {
         await fileSystemCache.get(cacheKey)
       } catch (e) {
         // TODO: Check error code in the future
-        expect(e.message.startsWith('Unable to parse cache contents')).toBeTruthy()
+        expect(
+          e.message.startsWith('Unable to parse cache contents'),
+        ).toBeTruthy()
       }
     })
   })
@@ -129,12 +131,12 @@ describe('FileSystemCache', () => {
     it('throws an error if the value of the given key is not a number', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.set(cacheKey, "none-integer-value")
+      await fileSystemCache.set(cacheKey, 'none-integer-value')
 
       try {
         await fileSystemCache.increment(cacheKey)
       } catch (e) {
-        expect(e.message).toEqual("Unable to increment a none integer value")
+        expect(e.message).toEqual('Unable to increment a none integer value')
       }
     })
 
@@ -161,12 +163,12 @@ describe('FileSystemCache', () => {
     it('throws an error if the value of the given key is not a number', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.set(cacheKey, "none-integer-value")
+      await fileSystemCache.set(cacheKey, 'none-integer-value')
 
       try {
         await fileSystemCache.decrement(cacheKey)
       } catch (e) {
-        expect(e.message).toEqual("Unable to increment a none integer value")
+        expect(e.message).toEqual('Unable to increment a none integer value')
       }
     })
 

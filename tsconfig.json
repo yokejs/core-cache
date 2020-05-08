@@ -7,18 +7,8 @@
     "outDir": "lib",
     "strict": true,
     "target": "es6",
-    "types": [
-      "node",
-      "jest"
-    ]
+    "types": ["node", "jest"]
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "lib",
-    "__tests__/**/*",
-    "src/**/*.test.ts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "lib", "__tests__/**/*", "src/**/*.test.ts"]
 }

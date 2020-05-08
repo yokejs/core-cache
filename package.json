@@ -11,12 +11,26 @@
     }
   ],
   "description": "A Node.js cache manager written in TypeScript.",
-  "keywords": ["cache", "cached", "caching", "cache manager", "store", "filesystem", "object", "node", "typescript"],
+  "keywords": [
+    "cache",
+    "cached",
+    "caching",
+    "cache manager",
+    "store",
+    "filesystem",
+    "object",
+    "node",
+    "typescript"
+  ],
   "homepage": "https://github.com/yokejs/core-cache",
   "scripts": {
     "build": "rm -rf lib/ && tsc",
     "test": "jest",
-    "prepublish": "yarn build"
+    "format": "prettier --write 'src/**/**/*.ts'",
+    "prepare": "build",
+    "prepublishOnly": "yarn test",
+    "preversion": "yarn test",
+    "version": "npm run format && git add -A src"
   },
   "engines": {
     "node": "12"
@@ -27,6 +41,7 @@
     "@types/jest": "^25.2.1",
     "delay": "^4.3.0",
     "jest": "^25.5.4",
+    "prettier": "2.0.5",
     "ts-jest": "^25.4.0",
     "typescript": "^3.8.3"
   }

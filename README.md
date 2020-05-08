@@ -13,7 +13,7 @@ or
 
 ## Current drivers
 
-* Filesystem
+- Filesystem
 
 ## Usage
 
@@ -57,6 +57,7 @@ await fileSystemCache.flush()
 ```
 
 ### Increasing and decreasing values in the cache
+
 ```
 // Increase and return a cache value by 1
 const newValue = await fileSystemCache.increment('my:cache:key')
@@ -72,5 +73,6 @@ const newValue = await fileSystemCache.decrement('my:cache:key', 99)
 ```
 
 ## License
+
 Yoke.js Cache is open-sourced software licensed under the
- [MIT](https://opensource.org/licenses/MIT) License.
+[MIT](https://opensource.org/licenses/MIT) License.
