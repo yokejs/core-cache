@@ -46,6 +46,13 @@ const resolveCacheFile = (key: string, separator: string): string => {
 }
 
 /**
+ * Resolve the absolute cache file path from the directory and file.
+ */
+const resolveAbsoluteCacheFilePath = (cacheDir: string, cacheFile: string): string => {
+  return path.normalize(`${cacheDir}/${cacheFile}`)
+}
+
+/**
  * Determine whether the given expiry timestamp is valid.
  */
 const isValidExpiry = (timestamp: string): boolean => {
@@ -81,22 +88,23 @@ const FileSystemCache = ({core, directory}: IFileSystemCacheOptions): IYokeCache
     get: async (key: string): Promise<any> => {
       const cacheDir = `${directory}/${resolveCacheDirectory(key, core.cacheKeySeparator())}`
       const cacheFile = resolveCacheFile(key, core.cacheKeySeparator())
+      const absoluteCacheFilePath = resolveAbsoluteCacheFilePath(cacheDir, cacheFile)
 
-      if (!await fs.existsSync(`${cacheDir}/${cacheFile}`)) {
+      if (!await fs.existsSync(absoluteCacheFilePath)) {
         return null
       }
 
-      const contents = await fsPromises.readFile(`${cacheDir}/${cacheFile}`)
+      const contents = await fsPromises.readFile(absoluteCacheFilePath)
       const timestamp = contents.toString().substr(0, 13)
 
       if (!isValidExpiry(timestamp)) {
-        await fsPromises.unlink(`${cacheDir}/${cacheFile}`)
+        await fsPromises.unlink(absoluteCacheFilePath)
 
-        throw new Error(`Invalid expiry timestamp in "${resolveCacheDirectory(key, core.cacheKeySeparator())}/${cacheFile}". File has been removed.`)
+        throw new Error(`Invalid expiry timestamp in "${absoluteCacheFilePath}". File has been removed.`)
       }
 
       if (!isIndefiniteExpiryTimestamp(timestamp) && parseInt(timestamp) < new Date().getTime()) {
-        await fsPromises.unlink(`${cacheDir}/${cacheFile}`)
+        await fsPromises.unlink(absoluteCacheFilePath)
 
         return null
       }
@@ -106,9 +114,9 @@ const FileSystemCache = ({core, directory}: IFileSystemCacheOptions): IYokeCache
       try {
         return JSON.parse(value)
       } catch (e) {
-        await fsPromises.unlink(`${cacheDir}/${cacheFile}`)
+        await fsPromises.unlink(absoluteCacheFilePath)
 
-        throw new Error(`Unable to parse cache contents in "${resolveCacheDirectory(key, core.cacheKeySeparator())}/${cacheFile}". File has been removed. ${e.message}`)
+        throw new Error(`Unable to parse cache contents in "${absoluteCacheFilePath}". File has been removed. ${e.message}`)
       }
     },
 
@@ -116,7 +124,10 @@ const FileSystemCache = ({core, directory}: IFileSystemCacheOptions): IYokeCache
      * Set a value in the cache.
      */
     set: async (key: string, value: any, milliseconds?: number): Promise<void> => {
-      const cacheDir = `${directory}/${resolveCacheDirectory(key, core.cacheKeySeparator())}`
+      const cacheDir = path.normalize(`${directory}/${resolveCacheDirectory(key, core.cacheKeySeparator())}`)
+      const cacheFile = resolveCacheFile(key, core.cacheKeySeparator())
+      const absoluteCacheFilePath = resolveAbsoluteCacheFilePath(cacheDir, cacheFile)
+
       const now = new Date()
 
       if (milliseconds) {
@@ -128,7 +139,7 @@ const FileSystemCache = ({core, directory}: IFileSystemCacheOptions): IYokeCache
 
       const contents = `${expiryTimestamp}${JSON.stringify(value)}`
 
-      await fsPromises.writeFile(`${cacheDir}/${resolveCacheFile(key, core.cacheKeySeparator())}`, contents)
+      await fsPromises.writeFile(absoluteCacheFilePath, contents)
     },
 
     /**
@@ -160,18 +171,19 @@ const FileSystemCache = ({core, directory}: IFileSystemCacheOptions): IYokeCache
      * Delete an item in the cache.
      */
     delete: async (key: string): Promise<void> => {
-      const cacheDir = `${directory}/${resolveCacheDirectory(key, core.cacheKeySeparator())}`
+      const cacheDir = path.normalize(`${directory}/${resolveCacheDirectory(key, core.cacheKeySeparator())}`)
       const cacheFile = resolveCacheFile(key, core.cacheKeySeparator())
+      const absoluteCacheFilePath = resolveAbsoluteCacheFilePath(cacheDir, cacheFile)
 
-      if (!fs.existsSync(`${cacheDir}/${cacheFile}`)) {
+      if (!fs.existsSync(absoluteCacheFilePath)) {
         return
       }
 
       try {
-        await fsPromises.unlink(`${cacheDir}/${cacheFile}`)
+        await fsPromises.unlink(absoluteCacheFilePath)
       } catch (e) {
         // TODO: Write test
-        throw new Error(`Unable to remove file "${resolveCacheDirectory(key, core.cacheKeySeparator())}/${cacheFile}". ${e.message}`)
+        throw new Error(`Unable to remove file "${absoluteCacheFilePath}". ${e.message}`)
       }
     },
 
