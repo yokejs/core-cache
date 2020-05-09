@@ -10,7 +10,7 @@ describe('RedisCache', () => {
 
   const redisCache = RedisCache({ client, core: CoreCache() })
 
-  afterEach(() => client.flushall())
+  afterEach(client.flushall)
 
   describe('set', () => {
     it('should store the given value in the redis cache for 2 seconds', async () => {
