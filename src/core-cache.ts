@@ -24,9 +24,9 @@ export interface IYokeCache {
   decrement: (key: string, by?: number) => Promise<number>
 
   /**
-   * Delete an item in the cache.
+   * Delete an item in the cache and return the number of keys removed.
    */
-  delete: (key: string) => Promise<void>
+  delete: (key: string) => Promise<number>
 
   /**
    * Delete all items in the cache.

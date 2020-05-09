@@ -104,14 +104,16 @@ describe('FileSystemCache', () => {
   })
 
   describe('delete', () => {
-    it('removes the given cache file', async () => {
-      expect.assertions(2)
+    it('removes the given cache file and returns 1', async () => {
+      expect.assertions(3)
 
       await fileSystemCache.set(cacheKey, cacheValue, 60000)
 
       expect(await fileSystemCache.get(cacheKey)).toEqual(cacheValue)
 
-      await fileSystemCache.delete(cacheKey)
+      const keysDeleted = await fileSystemCache.delete(cacheKey)
+
+      expect(keysDeleted).toEqual(1)
 
       expect(await fileSystemCache.get(cacheKey)).toBeNull()
     })

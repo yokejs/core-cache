@@ -200,7 +200,7 @@ const FileSystemCache = ({
     /**
      * Delete an item in the cache.
      */
-    delete: async (key: string): Promise<void> => {
+    delete: async (key: string): Promise<number> => {
       const cacheDir = path.normalize(
         `${directory}/${resolveCacheDirectory(key, core.cacheKeySeparator())}`,
       )
@@ -211,11 +211,13 @@ const FileSystemCache = ({
       )
 
       if (!fs.existsSync(absoluteCacheFilePath)) {
-        return
+        return 0
       }
 
       try {
         await fsPromises.unlink(absoluteCacheFilePath)
+
+        return 1
       } catch (e) {
         // TODO: Write test
         throw new Error(

@@ -14,6 +14,7 @@ or
 ## Current drivers
 
 - Filesystem
+- Redis
 
 ## Usage
 
