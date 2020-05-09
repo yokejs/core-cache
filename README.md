@@ -33,6 +33,10 @@ import CoreCache, {RedisCache as Cache} from '@yokejs/core-cache'
 // Create the redis client
 const client = redis.createClient()
 const cache = Cache({client, core: CoreCache())})
+
+// Perform operations
+
+client.quit()
 ```
 
 #### Filesystem
