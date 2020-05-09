@@ -4,4 +4,6 @@ export type { IYokeCache } from './core-cache'
 
 export { default as FileSystemCache } from './file-system-cache'
 
+export { default as RedisCache } from './redis-cache'
+
 export default CoreCache

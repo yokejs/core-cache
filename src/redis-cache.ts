@@ -1,12 +1,11 @@
 import { IYokeCache } from './core-cache'
 import CoreCache from './core-cache'
-import redis, { ClientOpts, RedisClient } from 'redis'
+import { RedisClient } from 'redis'
 import { promisify } from 'util'
 
 export interface IRedisCacheOptions {
   core: ReturnType<typeof CoreCache>
   client: RedisClient
-  // options: ClientOpts
 }
 
 const RedisCache = ({ core, client }: IRedisCacheOptions): IYokeCache => {
