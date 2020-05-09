@@ -89,7 +89,7 @@ const newValue = await cache.increment('my:cache:key', 99)
 // Decrease and return a cache value by 1
 const newValue = await cache.decrement('my:cache:key')
 
-// Incremenent and return a cache value by 99
+// Decrease and return a cache value by 99
 const newValue = await cache.decrement('my:cache:key', 99)
 ```
 
