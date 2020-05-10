@@ -1,3 +1,5 @@
+![CI](https://github.com/yokejs/core-cache/workflows/CI/badge.svg)
+
 # [Yoke.js Cache](https://github.com/yokejs/core-cache)
 
 Yoke.js Cache is a simple Node.js cache manager.
