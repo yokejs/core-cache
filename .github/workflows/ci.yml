@@ -28,6 +28,9 @@ jobs:
         # Version Spec of the version to use.  Examples: 10.x, 10.15.1, >=10.15.0
         node-version: 12.x
     
+    - name: Intall dependencies
+      run: yarn
+        
     - name: Run build
       run: yarn build
       
