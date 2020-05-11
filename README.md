@@ -1,4 +1,4 @@
-![CI](https://github.com/yokejs/core-cache/workflows/CI/badge.svg)
+![CI](https://github.com/yokejs/core-cache/workflows/Build/badge.svg) ![CI](https://github.com/yokejs/core-cache/workflows/Tests/badge.svg) ![CI](https://github.com/yokejs/core-cache/workflows/Linting/badge.svg)
 
 # [Yoke.js Cache](https://github.com/yokejs/core-cache)
 
