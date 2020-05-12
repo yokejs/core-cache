@@ -30,11 +30,12 @@ or
 #### Redis
 
 ```
-import CoreCache, {RedisCache as Cache} from '@yokejs/core-cache'
+import Cache, {RedisCache} from '@yokejs/core-cache'
 
 // Create the redis client
 const client = redis.createClient()
-const cache = Cache({client, core: CoreCache())})
+
+const cache = Cache(RedisCache({ client }))
 
 // Perform operations
 
@@ -44,11 +45,12 @@ client.quit()
 #### Filesystem
 
 ```
-import CoreCache, {FileSystemCache as Cache} from '@yokejs/core-cache'
+import Cache, {FileSystemCache} from '@yokejs/core-cache'
 
 // Define an absolute path to store the cache files
 const directory = path.resolve(__dirname, './cache')
-const cache = Cache({directory, core: CoreCache()})
+
+const cache = Cache(FileSystemCache({ directory }))
 ```
 
 ### Storing an item in the cache

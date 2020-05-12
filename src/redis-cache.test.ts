@@ -1,5 +1,5 @@
 import RedisCache from './redis-cache'
-import CoreCache from './core-cache'
+import Cache from './cache'
 import redis from 'redis-mock'
 import delay from 'delay'
 
@@ -8,7 +8,7 @@ describe('RedisCache', () => {
   const cacheKey = 'some:cache:key'
   const cacheValue = 'some value'
 
-  const redisCache = RedisCache({ client, core: CoreCache() })
+  const cache = Cache(RedisCache({ client }))
 
   afterEach(client.flushall)
 
@@ -16,23 +16,23 @@ describe('RedisCache', () => {
     it('should store the given value in the redis cache for 2 seconds', async () => {
       expect.assertions(2)
 
-      await redisCache.set(cacheKey, cacheValue, 2000)
+      await cache.set(cacheKey, cacheValue, 2000)
 
-      expect(await redisCache.get(cacheKey)).toEqual(cacheValue)
+      expect(await cache.get(cacheKey)).toEqual(cacheValue)
 
       await delay(2001)
 
-      expect(await redisCache.get(cacheKey)).toBeNull()
+      expect(await cache.get(cacheKey)).toBeNull()
     })
 
     it('should store the given value in the redis cache indefinitely', async () => {
       expect.assertions(1)
 
-      await redisCache.set(cacheKey, cacheValue)
+      await cache.set(cacheKey, cacheValue)
 
       await delay(1001)
 
-      expect(await redisCache.get(cacheKey)).toEqual(cacheValue)
+      expect(await cache.get(cacheKey)).toEqual(cacheValue)
     })
   })
 
@@ -40,15 +40,15 @@ describe('RedisCache', () => {
     it('should return the value for the given key', async () => {
       expect.assertions(1)
 
-      await redisCache.set(cacheKey, cacheValue)
+      await cache.set(cacheKey, cacheValue)
 
-      expect(await redisCache.get(cacheKey)).toEqual(cacheValue)
+      expect(await cache.get(cacheKey)).toEqual(cacheValue)
     })
 
     it('should return null if the key does not exist', async () => {
       expect.assertions(1)
 
-      expect(await redisCache.get(cacheKey)).toBeNull()
+      expect(await cache.get(cacheKey)).toBeNull()
     })
   })
 
@@ -56,12 +56,12 @@ describe('RedisCache', () => {
     it('should remove the cache key and return 1', async () => {
       expect.assertions(2)
 
-      await redisCache.set(cacheKey, cacheValue)
+      await cache.set(cacheKey, cacheValue)
 
-      const keysDeleted = await redisCache.delete(cacheKey)
+      const keysDeleted = await cache.delete(cacheKey)
 
       expect(keysDeleted).toEqual(1)
-      expect(await redisCache.get(cacheKey)).toBeNull()
+      expect(await cache.get(cacheKey)).toBeNull()
     })
   })
 
@@ -69,11 +69,11 @@ describe('RedisCache', () => {
     it('removes all keys from cache', async () => {
       expect.assertions(1)
 
-      await redisCache.set(cacheKey, cacheValue)
+      await cache.set(cacheKey, cacheValue)
 
-      await redisCache.flush()
+      await cache.flush()
 
-      expect(await redisCache.get(cacheKey)).toBeNull()
+      expect(await cache.get(cacheKey)).toBeNull()
     })
   })
 
@@ -81,23 +81,23 @@ describe('RedisCache', () => {
     it('increments and returns a value in the cache', async () => {
       expect.assertions(2)
 
-      await redisCache.set(cacheKey, 99)
+      await cache.set(cacheKey, 99)
 
-      const newValue = await redisCache.increment(cacheKey)
+      const newValue = await cache.increment(cacheKey)
 
       expect(newValue).toEqual(100)
-      expect(await redisCache.get(cacheKey)).toEqual('100')
+      expect(await cache.get(cacheKey)).toEqual('100')
     })
 
     it('increments and returns a value in the cache by the given increment', async () => {
       expect.assertions(2)
 
-      await redisCache.set(cacheKey, 99)
+      await cache.set(cacheKey, 99)
 
-      const newValue = await redisCache.increment(cacheKey, 100)
+      const newValue = await cache.increment(cacheKey, 100)
 
       expect(newValue).toEqual(199)
-      expect(await redisCache.get(cacheKey)).toEqual('199')
+      expect(await cache.get(cacheKey)).toEqual('199')
     })
   })
 
@@ -105,23 +105,23 @@ describe('RedisCache', () => {
     it('decrements and returns a value in the cache', async () => {
       expect.assertions(2)
 
-      await redisCache.set(cacheKey, 99)
+      await cache.set(cacheKey, 99)
 
-      const newValue = await redisCache.decrement(cacheKey)
+      const newValue = await cache.decrement(cacheKey)
 
       expect(newValue).toEqual(98)
-      expect(await redisCache.get(cacheKey)).toEqual('98')
+      expect(await cache.get(cacheKey)).toEqual('98')
     })
 
     it('decrements and returns a value in the cache by the given decrement', async () => {
       expect.assertions(2)
 
-      await redisCache.set(cacheKey, 99)
+      await cache.set(cacheKey, 99)
 
-      const newValue = await redisCache.decrement(cacheKey, 100)
+      const newValue = await cache.decrement(cacheKey, 100)
 
       expect(newValue).toEqual(-1)
-      expect(await redisCache.get(cacheKey)).toEqual('-1')
+      expect(await cache.get(cacheKey)).toEqual('-1')
     })
   })
 })

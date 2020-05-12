@@ -3,7 +3,7 @@ import * as path from 'path'
 import delay from 'delay'
 import { promises as fsPromises } from 'fs'
 import * as fs from 'fs'
-import CoreCache from './core-cache'
+import Cache from './cache'
 
 describe('FileSystemCache', () => {
   const directory = path.resolve(__dirname, '../__tests__/support/cache')
@@ -14,24 +14,24 @@ describe('FileSystemCache', () => {
     return fsPromises.rmdir(directory, { recursive: true })
   })
 
-  const fileSystemCache = FileSystemCache({ directory, core: CoreCache() })
+  const cache = Cache(FileSystemCache({ directory }))
 
   describe('set', () => {
     it('should store the given value in a flat file with the correct expiry timestamp', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.set(cacheKey, cacheValue, 2000)
-      expect(await fileSystemCache.get(cacheKey)).toEqual(cacheValue)
+      await cache.set(cacheKey, cacheValue, 2000)
+      expect(await cache.get(cacheKey)).toEqual(cacheValue)
     })
 
     it('should store the given value in a flat file indefinitely if no expiry is given', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.set(cacheKey, cacheValue)
+      await cache.set(cacheKey, cacheValue)
 
       await delay(1001)
 
-      expect(await fileSystemCache.get(cacheKey)).toEqual(cacheValue)
+      expect(await cache.get(cacheKey)).toEqual(cacheValue)
     })
   })
 
@@ -39,9 +39,9 @@ describe('FileSystemCache', () => {
     it('should return an unserialized value if still valid', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.set(cacheKey, cacheValue, 6000)
+      await cache.set(cacheKey, cacheValue, 6000)
 
-      expect(await fileSystemCache.get(cacheKey)).toEqual(cacheValue)
+      expect(await cache.get(cacheKey)).toEqual(cacheValue)
     })
 
     it('should return null and delete the file if the cache key has expired', async () => {
@@ -50,11 +50,11 @@ describe('FileSystemCache', () => {
       const cacheKey = 'some.cache.key'
       const cacheValue = 'some value'
 
-      await fileSystemCache.set(cacheKey, cacheValue, 1000)
+      await cache.set(cacheKey, cacheValue, 1000)
 
       await delay(1001)
 
-      expect(await fileSystemCache.get(cacheKey)).toBeNull()
+      expect(await cache.get(cacheKey)).toBeNull()
     })
 
     it('should return null if the cache file does not exist', async () => {
@@ -62,7 +62,7 @@ describe('FileSystemCache', () => {
 
       const cacheKey = 'some:cache:key:which:does:not:exist'
 
-      expect(await fileSystemCache.get(cacheKey)).toBeNull()
+      expect(await cache.get(cacheKey)).toBeNull()
     })
 
     it('throws an error if the expiry timestamp is invalid', async () => {
@@ -74,7 +74,7 @@ describe('FileSystemCache', () => {
       await fsPromises.writeFile(`${directory}/${cacheKey}`, contents)
 
       try {
-        await fileSystemCache.get(cacheKey)
+        await cache.get(cacheKey)
       } catch (e) {
         // TODO: Check error code in the future
         expect(e.message.startsWith('Invalid expiry timestamp')).toBeTruthy()
@@ -93,7 +93,7 @@ describe('FileSystemCache', () => {
       await fsPromises.writeFile(`${directory}/${cacheKey}`, contents)
 
       try {
-        await fileSystemCache.get(cacheKey)
+        await cache.get(cacheKey)
       } catch (e) {
         // TODO: Check error code in the future
         expect(
@@ -107,15 +107,15 @@ describe('FileSystemCache', () => {
     it('removes the given cache file and returns 1', async () => {
       expect.assertions(3)
 
-      await fileSystemCache.set(cacheKey, cacheValue, 60000)
+      await cache.set(cacheKey, cacheValue, 60000)
 
-      expect(await fileSystemCache.get(cacheKey)).toEqual(cacheValue)
+      expect(await cache.get(cacheKey)).toEqual(cacheValue)
 
-      const keysDeleted = await fileSystemCache.delete(cacheKey)
+      const keysDeleted = await cache.delete(cacheKey)
 
       expect(keysDeleted).toEqual(1)
 
-      expect(await fileSystemCache.get(cacheKey)).toBeNull()
+      expect(await cache.get(cacheKey)).toBeNull()
     })
   })
 
@@ -123,7 +123,7 @@ describe('FileSystemCache', () => {
     it('removes the base cache directory', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.flush()
+      await cache.flush()
 
       expect(fs.existsSync(directory)).toBeFalsy()
     })
@@ -133,10 +133,10 @@ describe('FileSystemCache', () => {
     it('throws an error if the value of the given key is not a number', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.set(cacheKey, 'none-integer-value')
+      await cache.set(cacheKey, 'none-integer-value')
 
       try {
-        await fileSystemCache.increment(cacheKey)
+        await cache.increment(cacheKey)
       } catch (e) {
         expect(e.message).toEqual('Unable to increment a none integer value')
       }
@@ -145,7 +145,7 @@ describe('FileSystemCache', () => {
     it('returns the given incremental number if the key does not exist', async () => {
       expect.assertions(1)
 
-      const incrementedValue = await fileSystemCache.increment(cacheKey, 1234)
+      const incrementedValue = await cache.increment(cacheKey, 1234)
 
       expect(incrementedValue).toEqual(1234)
     })
@@ -153,9 +153,9 @@ describe('FileSystemCache', () => {
     it('increases the existing value by the provided number of increments and returns the new value', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.set(cacheKey, 3456)
+      await cache.set(cacheKey, 3456)
 
-      const incrementedValue = await fileSystemCache.increment(cacheKey, 33)
+      const incrementedValue = await cache.increment(cacheKey, 33)
 
       expect(incrementedValue).toEqual(3489)
     })
@@ -165,10 +165,10 @@ describe('FileSystemCache', () => {
     it('throws an error if the value of the given key is not a number', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.set(cacheKey, 'none-integer-value')
+      await cache.set(cacheKey, 'none-integer-value')
 
       try {
-        await fileSystemCache.decrement(cacheKey)
+        await cache.decrement(cacheKey)
       } catch (e) {
         expect(e.message).toEqual('Unable to increment a none integer value')
       }
@@ -177,7 +177,7 @@ describe('FileSystemCache', () => {
     it('returns the given decremental number if the key does not exist', async () => {
       expect.assertions(1)
 
-      const incrementedValue = await fileSystemCache.decrement(cacheKey, 109)
+      const incrementedValue = await cache.decrement(cacheKey, 109)
 
       expect(incrementedValue).toEqual(-109)
     })
@@ -185,9 +185,9 @@ describe('FileSystemCache', () => {
     it('decreases the existing value by the given decremental value and returns the new value', async () => {
       expect.assertions(1)
 
-      await fileSystemCache.set(cacheKey, 3456)
+      await cache.set(cacheKey, 3456)
 
-      const incrementedValue = await fileSystemCache.decrement(cacheKey, 2)
+      const incrementedValue = await cache.decrement(cacheKey, 2)
 
       expect(incrementedValue).toEqual(3454)
     })

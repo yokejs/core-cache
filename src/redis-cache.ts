@@ -1,14 +1,12 @@
-import { IYokeCache } from './core-cache'
-import CoreCache from './core-cache'
+import { IYokeCacheDriver } from './cache'
 import { RedisClient } from 'redis'
 import { promisify } from 'util'
 
 export interface IRedisCacheOptions {
-  core: ReturnType<typeof CoreCache>
   client: RedisClient
 }
 
-const RedisCache = ({ core, client }: IRedisCacheOptions): IYokeCache => {
+const RedisCache = ({ client }: IRedisCacheOptions): IYokeCacheDriver => {
   const getAsync = promisify(client.get).bind(client)
   const setAsync = promisify(client.set).bind(client)
   const setExAsync = promisify(client.setex).bind(client)
@@ -20,7 +18,6 @@ const RedisCache = ({ core, client }: IRedisCacheOptions): IYokeCache => {
   const flushAsync = promisify(client.flushall).bind(client)
 
   return {
-    ...core,
     /**
      * Get a value from the cache.
      */

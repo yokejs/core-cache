@@ -1,11 +1,9 @@
 import fs from 'fs'
 import { promises as fsPromises } from 'fs'
-import { IYokeCache } from './core-cache'
+import { cacheKeySeparator, IYokeCacheDriver } from './cache'
 import * as path from 'path'
-import CoreCache from './core-cache'
 
 export interface IFileSystemCacheOptions {
-  core: ReturnType<typeof CoreCache>
   directory: string
 }
 
@@ -83,20 +81,18 @@ const isIndefiniteExpiryTimestamp = (timestamp: string): boolean => {
 }
 
 const FileSystemCache = ({
-  core,
   directory,
-}: IFileSystemCacheOptions): IYokeCache => {
+}: IFileSystemCacheOptions): IYokeCacheDriver => {
   return {
-    ...core,
     /**
      * Get a value from the cache.
      */
     get: async (key: string): Promise<any> => {
       const cacheDir = `${directory}/${resolveCacheDirectory(
         key,
-        core.cacheKeySeparator(),
+        cacheKeySeparator(),
       )}`
-      const cacheFile = resolveCacheFile(key, core.cacheKeySeparator())
+      const cacheFile = resolveCacheFile(key, cacheKeySeparator())
       const absoluteCacheFilePath = resolveAbsoluteCacheFilePath(
         cacheDir,
         cacheFile,
@@ -148,9 +144,9 @@ const FileSystemCache = ({
       milliseconds?: number,
     ): Promise<void> => {
       const cacheDir = path.normalize(
-        `${directory}/${resolveCacheDirectory(key, core.cacheKeySeparator())}`,
+        `${directory}/${resolveCacheDirectory(key, cacheKeySeparator())}`,
       )
-      const cacheFile = resolveCacheFile(key, core.cacheKeySeparator())
+      const cacheFile = resolveCacheFile(key, cacheKeySeparator())
       const absoluteCacheFilePath = resolveAbsoluteCacheFilePath(
         cacheDir,
         cacheFile,
@@ -178,7 +174,7 @@ const FileSystemCache = ({
      * If the key does not exist, sets to zero before performing the operation.
      */
     increment: async (key: string, by: number = 1): Promise<number> => {
-      const value = (await FileSystemCache({ core, directory }).get(key)) || 0
+      const value = (await FileSystemCache({ directory }).get(key)) || 0
       const parsed = parseInt(value)
 
       if (isNaN(parsed)) {
@@ -194,7 +190,7 @@ const FileSystemCache = ({
      * If the key does not exist, sets to zero before performing the operation.
      */
     decrement: async (key: string, by: number = 1): Promise<number> => {
-      return await FileSystemCache({ core, directory }).increment(key, by * -1)
+      return await FileSystemCache({ directory }).increment(key, by * -1)
     },
 
     /**
@@ -202,9 +198,9 @@ const FileSystemCache = ({
      */
     delete: async (key: string): Promise<number> => {
       const cacheDir = path.normalize(
-        `${directory}/${resolveCacheDirectory(key, core.cacheKeySeparator())}`,
+        `${directory}/${resolveCacheDirectory(key, cacheKeySeparator())}`,
       )
-      const cacheFile = resolveCacheFile(key, core.cacheKeySeparator())
+      const cacheFile = resolveCacheFile(key, cacheKeySeparator())
       const absoluteCacheFilePath = resolveAbsoluteCacheFilePath(
         cacheDir,
         cacheFile,

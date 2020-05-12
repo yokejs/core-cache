@@ -1,4 +1,11 @@
-export interface IYokeCache {
+interface IYokeCacheCore {
+  /**
+   * Return the separator used for cache keys.
+   */
+  cacheKeySeparator: () => string
+}
+
+export interface IYokeCacheDriver {
   /**
    * Get a value from the cache.
    */
@@ -36,18 +43,23 @@ export interface IYokeCache {
   /**
    * Return the separator used for cache keys.
    */
-  cacheKeySeparator: () => string
+  cacheKeySeparator?: () => string
 }
 
-const CoreCache = () => {
+export type IYokeCache = IYokeCacheCore & IYokeCacheDriver
+
+/**
+ * Return the separator used for cache keys.
+ */
+export const cacheKeySeparator = (): string => {
+  return ':'
+}
+
+const Cache = (driver: IYokeCacheDriver): IYokeCache => {
   return {
-    /**
-     * Return the separator used for cache keys.
-     */
-    cacheKeySeparator: (): string => {
-      return ':'
-    },
+    cacheKeySeparator,
+    ...driver,
   }
 }
 
-export default CoreCache
+export default Cache
