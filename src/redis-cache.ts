@@ -34,10 +34,10 @@ const RedisCache = ({ client }: IRedisCacheOptions): IYokeCacheDriver => {
       milliseconds?: number,
     ): Promise<void> => {
       if (milliseconds) {
-        const seconds = milliseconds / 1000
+        const seconds = Math.floor(milliseconds / 1000)
         await setExAsync(key, seconds, value)
-      }
-
+        return
+      } 
       await setAsync(key, value)
     },
 
